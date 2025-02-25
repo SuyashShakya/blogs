@@ -1,30 +1,29 @@
 "use client";
-import * as React from "react";
-// import { authenticate } from '@/app/lib/actions';
-import Image from "next/image";
-import Link from "next/link";
+
 import { ReloadIcon } from "@radix-ui/react-icons";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+
 import { useRouter } from "next/navigation";
 
-import { useForm } from "react-hook-form";
 import { createUser } from "@/utils/apiFunctions";
 import { userSchema } from "@/utils/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
-interface I {
+interface User {
   username: string;
   password: string;
   email: string;
   confirmPassword: string;
 }
-const Register = () => {
+const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -32,12 +31,17 @@ const Register = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<I>({
+  } = useForm<User>({
     resolver: zodResolver(
-      z.object({
-        ...userSchema,
-        confirmPassword: z.string().min(1, "Confirm password is required"),
-      })
+      z
+        .object({
+          ...userSchema,
+          confirmPassword: z.string().min(1, "Confirm password is required"),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: "Passwords do not match",
+          path: ["confirmPassword"],
+        })
     ),
   });
 
@@ -46,16 +50,14 @@ const Register = () => {
     const loginData = await createUser({
       email: data.email,
       password: data.password,
-      name: data.name,
+      username: data.username,
     });
-
     if (loginData?.error) {
-      console.log(loginData?.error);
+      toast(loginData?.error);
     } else {
       setIsLoading(false);
-
       router?.push("/");
-      router.refresh();
+      toast("User Created");
     }
   };
 
@@ -67,14 +69,14 @@ const Register = () => {
           onSubmit={handleSubmit(loginHandler)}
         >
           <div className="grid gap-2 text-center">
-            <h1 className="text-3xl font-bold">Register</h1>
+            <h1 className="text-3xl font-bold">Sign up</h1>
             <p className="text-balance text-muted-foreground">
               Fill the form below to register your email
             </p>
           </div>
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Full name</Label>
+              <Label htmlFor="email">Username</Label>
               <Input
                 id="username"
                 type="text"
@@ -102,12 +104,15 @@ const Register = () => {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                {...register("password")}
-              />
+              <div className="relative w-full max-w-sm">
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  {...register("password")}
+                />
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
+              </div>
               {!!errors?.password?.message && (
                 <p className="text-red-500 text-xs">
                   {errors.password?.message}
@@ -148,4 +153,4 @@ const Register = () => {
     </div>
   );
 };
-export default Register;
+export default Signup;
