@@ -56,45 +56,65 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      
+      async profile(profile) {
+        // Check if user exists in the database
+        let user = await prisma.user.findUnique({
+          where: { email: profile.email || '' },
+        });
+
+        // If user doesn't exist, create a new one
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              email: profile.email,
+              name: profile.name,
+            },
+          });
+        }
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        };
+      },
     }),
    
   ],
   callbacks: {
-    // async signIn({ account, profile }) {
-    //   console.log('hello')
-    //   if (account?.provider === "google") {
-    //     if (!profile?.email) {
-    //       return false; // Reject if no email is provided
-    //     }
-    //     console.log('hello2')
+     async signIn({ user, account }) {
+    if (account?.provider === "google") {
+      // Check if user already exists in the database
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email! },
+        include: { accounts: true },
+      });
 
-    //     const existingUser = await prisma.user.findUnique({
-    //       where: { email: profile.email },
-    //     });
-    //     console.log('hello3')
-    //     if (existingUser) {
-    //       console.log('hello4')
-    //       // If user exists, update their name
-    //       await prisma.user.update({
-    //         where: { email: profile.email },
-    //         data: { name: profile.name || existingUser.name },
-    //       });
-    //     } else {
-    //       console.log('hello5')
-    //       // If user does not exist, create a new one
-    //       await prisma.user.create({
-    //         data: {
-    //           email: profile.email,
-    //           name: profile.name || profile.email.split("@")[0], // Default name if none provided
-    //           password: "", // Leave empty as Google doesn't require a password
-    //         },
-    //       });
-    //     }
-    //   }
+      if (existingUser) {
+        // If the user exists but doesn't have a Google account linked, link it
+        const existingGoogleAccount = existingUser.accounts.find(
+          (acc) => acc.provider === "google"
+        );
 
-    //   return true;
-    // },
-
+        if (!existingGoogleAccount) {
+          await prisma.account.create({
+            data: {
+              userId: existingUser.id,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              access_token: account.access_token,
+              refresh_token: account.refresh_token,
+              expires_at: account.expires_at,
+            },
+          });
+        }
+      }
+    }
+    return true;
+  },
+  
     async jwt({ token, user }) {
       if (user) {
         const u = user as unknown as User;
@@ -110,7 +130,7 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      console.log('session', session, token)
+
       return {
         ...session,
         user: {

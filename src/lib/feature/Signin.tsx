@@ -37,6 +37,12 @@ const Signin = () => {
     }
   };
 
+  const googleLoginHandler = async () => {
+    await signIn("google", {
+      callbackUrl: "http://localhost:3000",
+    });
+  };
+
   return (
     <div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
       <div className="flex items-center justify-center py-12">
@@ -81,16 +87,11 @@ const Signin = () => {
             <p className="text-center">Or</p>
             <div className="flex justify-center">
               <div
-                className="p-2 rounded-lg flex justify-center gap-4 border border-gray-300 w-fit cursor-pointer"
-                onClick={(e) => {
-                  e.preventDefault();
-                  signIn("google", {
-                    callbackUrl: "http://localhost:3000",
-                  });
-                }}
+                className="p-2 items-center rounded-lg flex justify-center gap-4 border border-gray-300 w-fit cursor-pointer"
+                onClick={googleLoginHandler}
               >
                 <Image src="/google.svg" alt="google" height={25} width={25} />
-                <p>Sign in with google</p>
+                <p className="text-sm">Sign in with google</p>
               </div>
             </div>
           </div>
