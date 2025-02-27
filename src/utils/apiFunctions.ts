@@ -1,10 +1,12 @@
 import axios from "axios";
 
 export const createUser = async (data: {
-    username: string;
+    name: string;
     email: string;
     password: string;
   }) => {
-    const res = await axios.post(`/api/user`, data);
-    return res;
-  };
+      const res = await axios.post(`/api/user`, data);
+      return res
+};
+
+

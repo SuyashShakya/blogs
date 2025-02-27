@@ -7,7 +7,7 @@ import { z } from "zod";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, username, password } = z.object(userSchema).parse(body);
+    const { email, name, password } = z.object(userSchema).parse(body);
 
     const existingUserByEmail = await prisma?.user?.findUnique({
       where: { email: email },
@@ -23,17 +23,17 @@ export async function POST(req: Request) {
     const hashedPassword = await hash(password, 10);
     const newUser = await prisma?.user?.create({
       data: {
-        username,
+        name,
         email,
         password: hashedPassword,
       },
     });
-    const { username: newUsername, email: newEmail } = newUser;
+    const { name: newName, email: newEmail } = newUser;
     return NextResponse.json(
       { user: {
-        username: newUsername,
+        name: newName,
         email: newEmail
-      }, mesage: "User created successfully" },
+      }, message: "User created successfully" },
       { status: 201 }
     );
   } catch (error: unknown) { 

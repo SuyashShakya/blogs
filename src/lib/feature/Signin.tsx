@@ -1,15 +1,17 @@
 "use client";
 
+import { ReloadIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import Link from "next/link";
-import { ReloadIcon } from "@radix-ui/react-icons";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { PasswordInput } from "@/components/ui/password-input";
+import { customtoast } from "@/components/ui/toast";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const Signin = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,15 +26,14 @@ const Signin = () => {
       password: password,
       redirect: false,
     });
-    console.log("hello", loginData);
 
     if (loginData?.error) {
       setIsLoading(false);
-      console.log(loginData?.error);
+      customtoast({ message: "Something went wrong", type: "error" });
     } else {
-      console.log("loginData", loginData);
       setIsLoading(false);
       router?.replace("/");
+      customtoast({ message: "User logged in successfully", type: "success" });
     }
   };
 
@@ -52,7 +53,7 @@ const Signin = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="example@gmail.com"
                 required
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -61,27 +62,41 @@ const Signin = () => {
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
               </div>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 required
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
             <Button
               type="submit"
-              className="w-full hover:bg-black"
+              className="w-full hover:bg-black-500"
               onClick={loginHandler}
             >
               {isLoading && (
                 <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
               )}
-              Login
+              Sign in
             </Button>
+            <p className="text-center">Or</p>
+            <div className="flex justify-center">
+              <div
+                className="p-2 rounded-lg flex justify-center gap-4 border border-gray-300 w-fit cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  signIn("google", {
+                    callbackUrl: "http://localhost:3000",
+                  });
+                }}
+              >
+                <Image src="/google.svg" alt="google" height={25} width={25} />
+                <p>Sign in with google</p>
+              </div>
+            </div>
           </div>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="underline">
+            <Link href="/signup" className="underline">
               Sign up
             </Link>
           </div>
