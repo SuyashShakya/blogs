@@ -4,6 +4,7 @@ import { Toaster } from "sonner";
 import "./globals.css";
 import QueryClientProviders from "./queryClientProvider";
 import { AuthProvider } from "./authProvider";
+import NavBar from "@/lib/feature/NavBar/NavBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryClientProviders>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <main className="flex flex-col items-center w-[100%]">
+              {children}
+            </main>
+          </AuthProvider>
           <Toaster />
         </QueryClientProviders>
       </body>

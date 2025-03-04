@@ -1,7 +1,18 @@
-import type { NextConfig } from "next";
+/** @type {import('next').NextConfig} */
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const supabaseURL = 'yqscydjjujvopohmkffu.supabase.co'
+
+const nextConfig = {
+    experimental: {
+        serverComponentsExternalPackages: ['@prisma/client', 'bycrypt']
+    },
+    images: {
+        domains: [`${supabaseURL}`],
+        formats: ['image/avif', 'image/webp'],
+    },
+
+    
+    
 };
 
 export default nextConfig;

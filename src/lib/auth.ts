@@ -133,10 +133,12 @@ export const authOptions: NextAuthOptions = {
 
       return {
         ...session,
+        
         user: {
           ...session?.user,
           id: token?.id,
-          name: token?.name
+          name: token?.name,
+          email: token?.email
         },
       };
     },
