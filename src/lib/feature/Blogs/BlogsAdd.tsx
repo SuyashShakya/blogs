@@ -6,19 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { customtoast } from "@/components/ui/toast";
-import { createPost } from "@/utils/apiFunctions";
+import { createPost, getPost, updatePost } from "@/utils/apiFunctions";
 import { blogSchema } from "@/utils/schemas";
-import { sessions } from "@/utils/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { createClient } from "@supabase/supabase-js";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import isEmpty from "lodash/isEmpty";
 import { ArrowLeft } from "lucide-react";
-import { useSession } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ReactMarkdown from "react-markdown";
 import "react-markdown-editor-lite/lib/index.css";
@@ -33,8 +33,19 @@ interface Blog {
 }
 
 export const BlogAdd = () => {
+  const [image, setImage] = useState<string[]>([]);
   const router = useRouter();
   const [previewMode] = useState(false);
+  const queryClient = useQueryClient();
+
+  const searchParams = useSearchParams();
+  const id = searchParams?.get("id");
+
+  const { data, isFetching } = useQuery({
+    queryKey: ["post"],
+    queryFn: () => getPost(id as string),
+    enabled: !!id,
+  });
 
   const {
     register,
@@ -42,24 +53,57 @@ export const BlogAdd = () => {
     handleSubmit,
     watch,
     getValues,
+    reset,
     formState: { errors },
   } = useForm<Blog>({
     resolver: zodResolver(blogSchema),
   });
-
-  const session = useSession();
 
   const { mutate: createPostMutate, isPending: createPostPending } =
     useMutation({
       mutationFn: createPost,
       onSuccess: (res) => {
         customtoast({ message: res?.data?.message, type: "success" });
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
         router.push("/");
       },
       onError: (error: { response: { data: { message: string } } }) => {
         customtoast({ message: error?.response?.data?.message, type: "error" });
       },
     });
+
+  const { mutate: updatePostMutate, isPending: updatePostPending } =
+    useMutation({
+      mutationKey: ["updatePost", id], // Track the mutation state for this post
+      mutationFn: async (newData: {
+        title: string;
+        content: string;
+        tags?: string[];
+        published?: boolean;
+        image?: string;
+      }) => updatePost(newData, id as string), // Calls your API function
+      onSuccess: (res) => {
+        customtoast({ message: res?.data?.message, type: "success" });
+        queryClient.invalidateQueries({ queryKey: ["posts"] });
+        router.push("/");
+      },
+      onError: (error: { response: { data: { message: string } } }) => {
+        customtoast({ message: error?.response?.data?.message, type: "error" });
+      },
+    });
+
+  useEffect(() => {
+    if (data?.post) {
+      reset({
+        ...data?.post,
+        tags: data?.post?.tags
+          ?.map((item: { name: string }) => item?.name)
+          .join(","),
+      });
+      setImage([data?.post?.image]);
+    }
+  }, [isFetching]);
+
   const content = watch("content");
 
   const supabase = createClient(
@@ -68,7 +112,6 @@ export const BlogAdd = () => {
   );
 
   const bucket = "blogs";
-  const [image, setImage] = useState<string[]>([]);
 
   const onImageUpload = async (e) => {
     const randomNo = uuidv4();
@@ -86,17 +129,18 @@ export const BlogAdd = () => {
     }
   };
 
-  const onSubmit = (e) => {
-    // e.preventDefault();
+  const onSubmit = () => {
     const values = getValues();
-    createPostMutate({
-      title: values?.title,
-      content: values?.content,
+    const result = {
+      ...values,
       image: image[0],
-      published: values?.published,
       tags: values?.tags?.split(","),
-      authorId: (session?.data as unknown as sessions)?.user?.id,
-    });
+    };
+    if (id) {
+      updatePostMutate(result);
+    } else {
+      createPostMutate(result);
+    }
   };
 
   return (
@@ -105,7 +149,9 @@ export const BlogAdd = () => {
         <Link href="/">
           <ArrowLeft className="cursor-pointer" />
         </Link>
-        <p className="text-xl font-medium">Add Blog</p>
+        <p className="text-xl font-medium">
+          {searchParams?.get("id") ? "Edit Blog" : "Add Blog"}
+        </p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -131,6 +177,14 @@ export const BlogAdd = () => {
                 onChange={(e) => onImageUpload(e)}
                 multiple
               />
+              {!isEmpty(image) && (
+                <Image
+                  src={image[0]}
+                  alt="featured iamge"
+                  height={200}
+                  width={200}
+                />
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-2">
@@ -224,7 +278,7 @@ export const BlogAdd = () => {
           </div>
 
           <Button className="w-fit hover:bg-black" type="submit">
-            {createPostPending && (
+            {(createPostPending || updatePostPending) && (
               <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
             )}
             Submit

@@ -13,7 +13,7 @@ export async function GET(
   const session = await getServerSession(authOptions) as sessions;
 
   const {id } = await params;
-  // console.log('hello', id)
+
 
   if (!session?.user?.id) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -26,6 +26,11 @@ export async function GET(
       },
       include: {
         tags: true,
+        author: {
+          select: {
+            name: true
+          }
+        }
       },
     });
 

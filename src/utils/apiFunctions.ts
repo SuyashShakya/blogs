@@ -21,6 +21,17 @@ export const createPost = async (data: {
   return res;
 };
 
+export const updatePost = async (data: {
+  title: string;
+  content: string;
+  tags?: string[];
+  published?: boolean;
+  image?: string;
+}, id: string) => {
+  const res = await axios.put(`/api/posts/${id}`, data);
+  return res;
+};
+
 
 export const getPosts = async (page: number = 1, limit: number = 10) => {
   const queryParams = new URLSearchParams({

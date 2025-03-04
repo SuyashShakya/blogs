@@ -6,12 +6,6 @@ import { NextResponse } from "next/server";
 
 // GET all posts for the current user
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions) as sessions;
-
-  if (!session?.user?.id) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
   try {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
@@ -19,18 +13,20 @@ export async function GET(req: Request) {
     const skip = (page - 1) * limit;
 
     const posts = await prisma.post.findMany({
-      where: { authorId: session.user.id },
-      include: { tags: true },
+
+      include: { tags: true, author: {
+        select: {
+          name: true
+        }
+      } },
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
     });
 
-    const totalPosts = await prisma.post.count({
-      where: { authorId: session.user.id },
-    });
+    const total = await prisma.post.count();
 
-    return NextResponse.json({ posts, totalPosts, page, limit }, { status: 200 });
+    return NextResponse.json({ posts, total, page, limit }, { status: 200 });
   } catch (error) {
     console.error("Error fetching posts:", error);
     return NextResponse.json(
