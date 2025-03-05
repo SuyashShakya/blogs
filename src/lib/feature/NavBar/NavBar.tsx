@@ -1,5 +1,3 @@
-"use client";
-
 import { NavBarOptions } from "./NavBarOptions";
 
 export const NavBar = ({ title }: { title: string }) => {

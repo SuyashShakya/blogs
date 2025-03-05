@@ -11,6 +11,13 @@ export async function GET(req: Request) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const skip = (page - 1) * limit;
+    const isPublished = searchParams.get("isPublished");
+
+    const whereCondition: {published ?: boolean} = {};
+    if (isPublished !== null) {
+      whereCondition.published = isPublished === "true";
+    }
+
 
     const posts = await prisma.post.findMany({
 
@@ -20,11 +27,12 @@ export async function GET(req: Request) {
         }
       } },
       orderBy: { createdAt: "desc" },
+      where: whereCondition,
       skip,
       take: limit,
     });
 
-    const total = await prisma.post.count();
+    const total = await prisma.post.count({ where: whereCondition});
 
     return NextResponse.json({ posts, total, page, limit }, { status: 200 });
   } catch (error) {

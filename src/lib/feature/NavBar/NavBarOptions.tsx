@@ -10,8 +10,11 @@ import { customtoast } from "@/components/ui/toast";
 import { Menu } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export const NavBarOptions = () => {
+  const pathname = usePathname();
+
   const { data } = useSession();
 
   if (data?.user?.name) {
@@ -25,6 +28,19 @@ export const NavBarOptions = () => {
         <PopoverContent className="flex flex-col w-52 gap-4">
           <Link href="/blog/add">
             <p className="text-sm cursor-pointer">Create new blog</p>
+          </Link>
+          <Link
+            href={
+              pathname.includes("unpublished-blog")
+                ? "/"
+                : "/blog/unpublished-blog"
+            }
+          >
+            <p className="text-sm cursor-pointer">
+              {pathname.includes("unpublished-blog")
+                ? "Blogs"
+                : "Unpublished blogs"}
+            </p>
           </Link>
           <p
             className="text-sm cursor-pointer"

@@ -33,12 +33,14 @@ export const updatePost = async (data: {
 };
 
 
-export const getPosts = async (page: number = 1, limit: number = 10) => {
+export const getPosts = async (page: number = 1, limit: number = 10, isPublished: boolean) => {
   const queryParams = new URLSearchParams({
     page: String(page),
     limit: String(limit),
   });
-
+  if (isPublished !== undefined) {
+    queryParams.append("isPublished", String(isPublished));
+  }
   const res = await axios.get(`/api/posts?${queryParams.toString()}`);
   return res.data;
 };

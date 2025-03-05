@@ -43,12 +43,12 @@ interface Blog {
   };
 }
 
-export const BlogList = () => {
+export const UnpublishedBlogList = () => {
   const session = useSession();
 
   const { data, isLoading } = useQuery({
     queryKey: ["posts"],
-    queryFn: () => getPosts(1, 10, true),
+    queryFn: () => getPosts(1, 10, false),
     staleTime: 0,
   });
 
