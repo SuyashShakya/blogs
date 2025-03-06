@@ -15,9 +15,9 @@ export async function GET(
   const {id } = await params;
 
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  // if (!session?.user?.id) {
+  //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  // }
 
   try {
     const post = await prisma.post.findUnique({

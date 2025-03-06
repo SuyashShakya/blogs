@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import PaginationComponent from "@/components/ui/PaginationComponent";
 import { customtoast } from "@/components/ui/toast";
 import { formatDate } from "@/lib/utils";
 import { deletePost, getPosts } from "@/utils/apiFunctions";
@@ -26,6 +27,8 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 // import { useState } from "react";
 
 interface Blog {
@@ -44,13 +47,25 @@ interface Blog {
 }
 
 export const BlogList = () => {
+  const pathname = usePathname();
   const session = useSession();
+  const limit = 1;
+  const [currentPage, setCurrentPage] = useState(1);
+  console.log("hello", currentPage);
 
   const { data, isLoading } = useQuery({
     queryKey: ["posts"],
-    queryFn: () => getPosts(1, 10, true),
+    queryFn: () =>
+      getPosts(
+        currentPage as number,
+        limit,
+        pathname.includes("unpublished-blog") ? false : true
+      ),
     staleTime: 0,
+    enabled: currentPage > 0,
   });
+
+  const totalPages = Math.ceil(Number(data?.total) / Number(limit));
 
   const queryClient = useQueryClient();
 
@@ -74,13 +89,13 @@ export const BlogList = () => {
   };
 
   return (
-    <>
+    <div className="flex min-h-[90vh] flex-col">
       <div className="flex mb-16">
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 grid-flow-row gap-8">
           {!isEmpty(data?.posts) ? (
             data?.posts?.map((item: Blog) => (
               <div
-                className="border-box relative group duration-300 ease-in-out hover:shadow-lg flex flex-col p-4 gap-4 w-full min-w-[300px] min-h-[360px] rounded-lg transition transform hover:scale-105  hover:filter hover:grayscale"
+                className="border-box relative group duration-300 ease-in-out hover:shadow-lg flex flex-col p-4 gap-4 w-full min-w-[300px] min-h-[360px] rounded-lg transition transform hover:scale-105  hover:filter hover:grayscale max-w-[350px]"
                 key={item?.id}
               >
                 <Link href={`/blog/${item?.id}`}>
@@ -171,6 +186,15 @@ export const BlogList = () => {
           )}
         </div>
       </div>
-    </>
+      <div className="mt-auto sticky bottom-0 bg-white">
+        <PaginationComponent
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onPageChange={(e) => {
+            setCurrentPage(e);
+          }}
+        />
+      </div>
+    </div>
   );
 };
