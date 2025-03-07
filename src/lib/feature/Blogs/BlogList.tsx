@@ -49,9 +49,8 @@ interface Blog {
 export const BlogList = () => {
   const pathname = usePathname();
   const session = useSession();
-  const limit = 1;
+  const limit = 10;
   const [currentPage, setCurrentPage] = useState(1);
-  console.log("hello", currentPage);
 
   const { data, isLoading } = useQuery({
     queryKey: ["posts"],

@@ -5,7 +5,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Blogs | Blog Details",
-  description: "Blogs",
+  description: "Blog Details",
 };
 
 export default function BlogDetailsPage() {

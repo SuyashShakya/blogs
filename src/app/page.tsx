@@ -4,7 +4,7 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Blogs",
-  description: "Random Blogs ",
+  description: "Blog List",
 };
 
 export default async function BlogsPage() {
