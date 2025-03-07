@@ -16,6 +16,7 @@ export const BlogDetails = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["post"],
     queryFn: () => getPost(params?.id as string),
+    staleTime: 0,
   });
 
   if (isLoading) {

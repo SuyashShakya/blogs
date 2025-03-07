@@ -1,32 +1,6 @@
-import { getPosts } from "@/utils/apiFunctions"
 
 export default async function sitemap() {
-    const publishedBlogs = await getPosts(1, 10, true, true) 
-    
-    const publishedBlogsSitemap = publishedBlogs?.posts ? publishedBlogs?.posts?.map((blog:{id?:string}) => (
-        {
-            url: `${process.env.NEXT_PUBLIC_HOST}/our-stores/${blog?.id}`,
-            lastModified: new Date() ,
-            changeFrequency: 'daily',
-            priority: 0.7,
-        })) : [{
-            url: '', lastModified: new Date(), changeFrequency: 'daily',
-            priority: 0.7,
-        }]
-
-    const unPublishedBlogs = await getPosts(1, 10, false, true) 
-    
-        
-    const unPublishedBlogsSitemap = unPublishedBlogs?.posts ? unPublishedBlogs?.posts?.map((blog:{id?:string}) => (
-        {
-            url: `${process.env.NEXT_PUBLIC_HOST}/our-stores/${blog?.id}`,
-            lastModified: new Date() ,
-            changeFrequency: 'daily',
-            priority: 0.7,
-        })) : [{
-            url: '', lastModified: new Date(), changeFrequency: 'daily',
-            priority: 0.7,
-        }]
+   
 
   return [
     {
@@ -49,5 +23,5 @@ export default async function sitemap() {
     },
     
    
-  ].concat(publishedBlogsSitemap, unPublishedBlogsSitemap)
+  ]
 }

@@ -45,6 +45,7 @@ export const BlogAdd = () => {
     queryKey: ["post"],
     queryFn: () => getPost(id as string),
     enabled: !!id,
+    staleTime: 0,
   });
 
   const {
@@ -113,7 +114,8 @@ export const BlogAdd = () => {
 
   const bucket = "blogs";
 
-  const onImageUpload = async (e) => {
+  const onImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
     const randomNo = uuidv4();
     const image = e?.target?.files;
     const { data, error } = await supabase.storage

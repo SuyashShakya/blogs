@@ -7,17 +7,12 @@ import { NextResponse } from "next/server";
 // GET a single post
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+
 ) {
- 
-  const session = await getServerSession(authOptions) as sessions;
 
-  const {id } = await params;
-
-
-  // if (!session?.user?.id) {
-  //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  // }
+  const url = new URL(req.url);
+  const id = url.pathname.split('/').pop();
+  // const {id } = params;
 
   try {
     const post = await prisma.post.findUnique({
@@ -38,11 +33,6 @@ export async function GET(
       return NextResponse.json({ message: "Post not found" }, { status: 404 });
     }
 
-    // Check if the user is the author
-    // if (post.authorId !== session.user.id) {
-    //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    // }
-
     return NextResponse.json({ post }, { status: 200 });
   } catch (error) {
     console.error("Error fetching post:", error);
@@ -56,8 +46,10 @@ export async function GET(
 // UPDATE a post
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
 ) {
+
+  const url = new URL(req.url);
+  const id = url.pathname.split('/').pop();
   const session = await getServerSession(authOptions) as sessions;
 
   if (!session?.user?.id) {
@@ -68,7 +60,7 @@ export async function PUT(
     // Check if post exists and user is the author
     const existingPost = await prisma.post.findUnique({
       where: {
-        id: params.id,
+        id: id,
       },
     });
 
@@ -85,7 +77,7 @@ export async function PUT(
     // Update post
     const updatedPost = await prisma.post.update({
       where: {
-        id: params.id,
+        id: id,
       },
       data: {
         title,
@@ -98,7 +90,7 @@ export async function PUT(
             where: {
               posts: {
                 some: {
-                  id: params.id,
+                  id: id,
                 },
               },
             },
@@ -127,8 +119,10 @@ export async function PUT(
 // DELETE a post
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
 ) {
+
+  const url = new URL(req.url);
+  const id = url.pathname.split('/').pop();
   const session = await getServerSession(authOptions) as sessions;
 
   if (!session?.user?.id) {
@@ -139,7 +133,7 @@ export async function DELETE(
     // Check if post exists and user is the author
     const existingPost = await prisma.post.findUnique({
       where: {
-        id: params.id,
+        id: id,
       },
     });
 
@@ -154,7 +148,7 @@ export async function DELETE(
     // Delete post
     await prisma.post.delete({
       where: {
-        id: params.id,
+        id: id,
       },
     });
 
