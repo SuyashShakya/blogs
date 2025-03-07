@@ -17,7 +17,7 @@ import isEmpty from "lodash/isEmpty";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ReactMarkdown from "react-markdown";
@@ -33,6 +33,7 @@ interface Blog {
 }
 
 export const BlogAdd = () => {
+  const pathname = usePathname();
   const [image, setImage] = useState<string[]>([]);
   const router = useRouter();
   const [previewMode] = useState(false);
@@ -66,7 +67,9 @@ export const BlogAdd = () => {
       onSuccess: (res) => {
         customtoast({ message: res?.data?.message, type: "success" });
         queryClient.invalidateQueries({ queryKey: ["posts"] });
-        router.push("/");
+        router.push(
+          pathname.includes("unpublished-blog") ? "/" : "/blog/unpublished-blog"
+        );
       },
       onError: (error: { response: { data: { message: string } } }) => {
         customtoast({ message: error?.response?.data?.message, type: "error" });
@@ -86,7 +89,9 @@ export const BlogAdd = () => {
       onSuccess: (res) => {
         customtoast({ message: res?.data?.message, type: "success" });
         queryClient.invalidateQueries({ queryKey: ["posts"] });
-        router.push("/");
+        router.push(
+          pathname.includes("unpublished-blog") ? "/" : "/blog/unpublished-blog"
+        );
       },
       onError: (error: { response: { data: { message: string } } }) => {
         customtoast({ message: error?.response?.data?.message, type: "error" });
