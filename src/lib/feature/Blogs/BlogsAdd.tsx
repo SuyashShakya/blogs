@@ -68,7 +68,7 @@ export const BlogAdd = () => {
         customtoast({ message: res?.data?.message, type: "success" });
         queryClient.invalidateQueries({ queryKey: ["posts"] });
         router.push(
-          pathname.includes("unpublished-blog") ? "/" : "/blog/unpublished-blog"
+          pathname.includes("unpublished-blog") ? "/blog/unpublished-blog" : "/"
         );
       },
       onError: (error: { response: { data: { message: string } } }) => {
@@ -90,7 +90,7 @@ export const BlogAdd = () => {
         customtoast({ message: res?.data?.message, type: "success" });
         queryClient.invalidateQueries({ queryKey: ["posts"] });
         router.push(
-          pathname.includes("unpublished-blog") ? "/" : "/blog/unpublished-blog"
+          pathname.includes("unpublished-blog") ? "/blog/unpublished-blog" : "/"
         );
       },
       onError: (error: { response: { data: { message: string } } }) => {
